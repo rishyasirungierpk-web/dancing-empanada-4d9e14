@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRA Food & Express - Food & Instant Grocery Delivery</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti for Celebration Effects -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c',
+                        },
+                        zepto: {
+                            500: '#7c3aed',
+                            600: '#6d28d9',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Smooth scrolling & custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            50% { transform: scale(1.5); opacity: 0; }
+            100% { transform: scale(0.8); opacity: 0; }
+        }
+        .pulsing-dot::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border-radius: 50%;
+            background-color: rgba(225, 29, 72, 0.4);
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- TOP ANNOUNCEMENT BAR -->
+    <div id="top-banner" class="bg-gradient-to-r from-purple-700 via-indigo-600 to-brand-600 text-white text-xs font-semibold py-2 px-4 text-center flex justify-between items-center transition-all duration-300">
+        <div class="flex-1 text-center flex items-center justify-center gap-2">
+            <span class="bg-yellow-400 text-slate-900 font-black px-2 py-0.5 rounded text-[10px] tracking-wider uppercase animate-pulse">⚡ AIRA 10-MIN</span>
+            <span>Get Groceries & Snacks delivered in 10 minutes! Free delivery on orders over ₹199.</span>
+        </div>
+        <button onclick="document.getElementById('top-banner').classList.add('hidden')" class="text-white/80 hover:text-white ml-2">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- MAIN NAVBAR -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20 gap-4">
+                
+                <!-- Logo & Location Picker -->
+                <div class="flex items-center gap-6">
+                    <a href="#" onclick="switchTab('food')" class="flex items-center gap-2 group">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-orange-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/30 group-hover:scale-105 transition-transform">
+                            <i class="fa-solid fa-utensils text-xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-2xl font-black tracking-tight bg-gradient-to-r from-brand-600 via-rose-600 to-orange-500 bg-clip-text text-transparent">AIRA</span>
+                            <span class="text-xs font-bold uppercase tracking-wider block -mt-1 text-slate-400">Food & Express</span>
+                        </div>
+                    </a>
+
+                    <!-- Location Selector -->
+                    <div class="hidden md:flex items-center gap-2 text-sm bg-slate-100 hover:bg-slate-200/80 px-3 py-2 rounded-xl cursor-pointer transition-colors" onclick="openLocationModal()">
+                        <i class="fa-solid fa-location-dot text-brand-600"></i>
+                        <div class="leading-tight">
+                            <div class="font-bold text-xs text-slate-900 flex items-center gap-1">
+                                <span id="current-location-label">Other • Tiruchirappalli</span>
+                                <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+                            </div>
+                            <span class="text-[11px] text-slate-500 truncate max-w-[150px] block" id="current-location-sub">Main Road, City Center...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Tabs (Swiggy/Zomato style toggle) -->
+                <div class="hidden lg:flex bg-slate-100 p-1 rounded-2xl border border-slate-200/60">
+                    <button id="tab-food" onclick="switchTab('food')" class="px-5 py-2 rounded-xl text-sm font-bold transition-all duration-200 flex items-center gap-2 bg-white text-slate-900 shadow-sm">
+                        <i class="fa-solid fa-bowl-food text-brand-600"></i> Delivery
+                    </button>
+                    <button id="tab-zepto" onclick="switchTab('zepto')" class="px-5 py-2 rounded-xl text-sm font-bold text-slate-600 hover:text-slate-900 transition-all duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-amber-500"></i> AIRA Mart (10m)
+                    </button>
+                    <button id="tab-dining" onclick="switchTab('dining')" class="px-5 py-2 rounded-xl text-sm font-bold text-slate-600 hover:text-slate-900 transition-all duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-champagne-glasses text-purple-600"></i> Dining Out
+                    </button>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="flex-1 max-w-md hidden sm:block relative">
+                    <div class="relative flex items-center">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-slate-400"></i>
+                        <input type="text" id="main-search-input" onkeyup="handleSearch(this.value)" placeholder="Search for 'Biryani', 'Pizza', 'Milk' or 'Burger'..." class="w-full bg-slate-100/90 hover:bg-slate-100 focus:bg-white text-sm text-slate-800 pl-10 pr-10 py-2.5 rounded-xl border border-transparent focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all">
+                        <button id="search-clear-btn" onclick="clearSearch()" class="hidden absolute right-3 text-slate-400 hover:text-slate-600">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Action Controls (Offers, Help, Cart, Profile) -->
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleOffersModal()" class="hidden md:flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-brand-600 px-3 py-2 rounded-xl hover:bg-slate-100 transition-colors">
+                        <i class="fa-solid fa-percent text-amber-500"></i>
+                        <span>Offers</span>
+                    </button>
+
+                    <!-- Cart Trigger Button -->
+                    <button onclick="toggleCartDrawer()" class="relative flex items-center gap-2 bg-gradient-to-r from-brand-600 to-rose-600 hover:from-brand-700 hover:to-rose-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-md shadow-brand-600/20 active:scale-95 transition-all">
+                        <i class="fa-solid fa-basket-shopping text-lg"></i>
+                        <span class="hidden sm:inline text-sm">Cart</span>
+                        <span id="cart-count-badge" class="bg-white text-brand-600 text-xs font-extrabold px-2 py-0.5 rounded-full">0</span>
+                    </button>
+
+                    <!-- User Account / Profile -->
+                    <button onclick="openProfileModal()" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200/80 flex items-center justify-center text-slate-700 font-bold transition-colors">
+                        <i class="fa-regular fa-user"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Service Tabs Toggle -->
+        <div class="flex lg:hidden bg-slate-100 p-1 border-t border-slate-200">
+            <button id="mob-tab-food" onclick="switchTab('food')" class="flex-1 py-2 text-xs font-bold rounded-lg bg-white text-slate-900 shadow-sm text-center">
+                Delivery
+            </button>
+            <button id="mob-tab-zepto" onclick="switchTab('zepto')" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 text-center">
+                AIRA Mart ⚡
+            </button>
+            <button id="mob-tab-dining" onclick="switchTab('dining')" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 text-center">
+                Dining
+            </button>
+            <button id="mob-tab-stack" onclick="switchTab('stack')" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-600 text-center">
+                Tech Stack ⚙️
+            </button>
+        </div>
+    </header>
+
+    <!-- MOBILE SEARCH BAR (Visible only on small screens) -->
+    <div class="sm:hidden px-4 pt-3 pb-1 bg-white border-b border-slate-200">
+        <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400"></i>
+            <input type="text" onkeyup="handleSearch(this.value)" placeholder="Search food, groceries, items..." class="w-full bg-slate-100 text-sm text-slate-800 pl-10 pr-4 py-2.5 rounded-xl outline-none border border-transparent focus:border-brand-500">
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ACTIVE VIEW 1: FOOD DELIVERY MODE (Zomato/Swiggy Style) -->
+        <section id="view-food" class="space-y-8">
+            
+            <!-- HERO BANNER CAROUSEL / PROMOS -->
+            <div class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-slate-900 via-rose-950 to-slate-900 text-white p-6 sm:p-10 shadow-xl">
+                <div class="relative z-10 max-w-lg space-y-4">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        <i class="fa-solid fa-fire text-amber-400"></i> AIRA FESTIVAL SPECIAL
+                    </span>
+                    <h1 class="text-3xl sm:text-5xl font-black tracking-tight leading-tight">Craving Something Delicious?</h1>
+                    <p class="text-slate-300 text-sm sm:text-base">Up to 60% OFF on top artisanal restaurants, fast food & authentic regional cuisines near you.</p>
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button onclick="filterCuisine('Biryani')" class="bg-brand-600 hover:bg-brand-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-brand-600/30 transition-all">Order Biryani</button>
+                        <button onclick="filterCuisine('Pizza')" class="bg-white/10 hover:bg-white/20 text-white text-sm font-bold px-5 py-2.5 rounded-xl backdrop-blur-md transition-all">Explore Pizzas</button>
+                    </div>
+                </div>
+                <!-- Background Graphic Element -->
+                <div class="absolute right-0 bottom-0 top-0 w-1/2 opacity-20 sm:opacity-40 pointer-events-none flex items-center justify-end pr-8">
+                    <i class="fa-solid fa-burger text-[180px] sm:text-[240px] text-white/20"></i>
+                </div>
+            </div>
+
+            <!-- CUISINE CATEGORIES SCROLLER -->
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">What's on your mind?</h2>
+                    <span class="text-xs font-semibold text-slate-400">Scroll to explore</span>
+                </div>
+                <div class="flex items-center gap-6 overflow-x-auto hide-scrollbar pb-4" id="category-scroller">
+                    <!-- Dynamic Categories JS -->
+                </div>
+            </div>
+
+            <!-- QUICK FILTER CHIPS -->
+            <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar py-2 border-y border-slate-200/80">
+                <button onclick="applyFilter('all')" class="filter-chip active-chip px-4 py-2 rounded-xl text-xs font-bold border border-slate-300 bg-slate-900 text-white whitespace-nowrap transition-all">All Restaurants</button>
+                <button onclick="applyFilter('rating')" class="filter-chip px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 whitespace-nowrap transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-star text-amber-500"></i> Rating 4.0+
+                </button>
+                <button onclick="applyFilter('fast')" class="filter-chip px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 whitespace-nowrap transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-bolt text-emerald-500"></i> Fast Delivery (< 30 min)
+                </button>
+                <button onclick="applyFilter('pure_veg')" class="filter-chip px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 whitespace-nowrap transition-all flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full border border-emerald-600 p-0.5 flex items-center justify-center"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span></span> Pure Veg
+                </button>
+                <button onclick="applyFilter('offers')" class="filter-chip px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 whitespace-nowrap transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-tag text-rose-500"></i> Great Offers
+                </button>
+            </div>
+
+            <!-- RESTAURANTS GRID -->
+            <div>
+                <h2 id="restaurant-grid-title" class="text-xl font-extrabold text-slate-900 tracking-tight mb-6">Top Restaurants Delivering to You</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="restaurants-grid">
+                    <!-- Dynamic Restaurants JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ACTIVE VIEW 2: ZEPTO INSTAMART (10-Min Quick Grocery Mode) -->
+        <section id="view-zepto" class="hidden space-y-8">
+            <!-- AIRA MART HEADER BANNER -->
+            <div class="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-xl border border-purple-500/20">
+                <div class="relative z-10 max-w-xl space-y-3">
+                    <div class="inline-flex items-center gap-2 bg-yellow-400 text-slate-950 font-black text-xs px-3 py-1 rounded-full uppercase tracking-wider">
+                        <i class="fa-solid fa-bolt"></i> AIRA Mart 10-Minute Express
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Groceries, Snacks & Essentials</h2>
+                    <p class="text-purple-200 text-sm">Superfast delivery straight from our nearest dark store in 10 minutes!</p>
+                </div>
+                <div class="absolute right-4 bottom-2 text-purple-500/20 text-9xl pointer-events-none">
+                    <i class="fa-solid fa-basket-shopping"></i>
+                </div>
+            </div>
+
+            <!-- MART CATEGORIES GRID -->
+            <div>
+                <h3 class="text-lg font-bold text-slate-900 mb-4">Shop by Grocery Category</h3>
+                <div class="grid grid-cols-3 sm:grid-cols-6 gap-3" id="mart-categories">
+                    <!-- Dynamic Mart Categories JS -->
+                </div>
+            </div>
+
+            <!-- INSTANT GROCERY ITEMS GRID -->
+            <div>
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-extrabold text-slate-900">Trending Instant Items</h3>
+                    <span class="text-xs font-bold text-purple-600 bg-purple-100 px-3 py-1 rounded-full">⚡ Stocked & Ready</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" id="mart-items-grid">
+                    <!-- Dynamic Mart Items JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ACTIVE VIEW 3: DINING OUT MODE (Zomato Dining Style) -->
+        <section id="view-dining" class="hidden space-y-8">
+            <div class="bg-gradient-to-r from-slate-900 to-purple-950 text-white p-8 rounded-3xl shadow-xl relative overflow-hidden">
+                <div class="relative z-10 max-w-lg space-y-3">
+                    <span class="text-xs font-bold tracking-widest uppercase text-amber-400">Exclusive Table Booking & Deals</span>
+                    <h2 class="text-3xl sm:text-4xl font-black">Experience Fine Dining</h2>
+                    <p class="text-slate-300 text-sm">Pre-book tables, unlock up to 40% OFF flat discounts on your bill at premium luxury restaurants.</p>
+                </div>
+            </div>
+
+            <!-- DINING RESTAURANTS LIST -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="dining-grid">
+                <!-- Dynamic Dining Items JS -->
+            </div>
+        </section>
+
+        <!-- ACTIVE VIEW 4: TECH STACK & BACKEND ARCHITECTURE -->
+        <section id="view-stack" class="hidden space-y-8">
+            <div class="bg-slate-900 text-white p-8 rounded-3xl shadow-xl space-y-4">
+                <div class="inline-flex items-center gap-2 bg-brand-600 text-white font-extrabold text-xs px-3 py-1 rounded-full uppercase">
+                    <i class="fa-solid fa-code"></i> Developer Architecture & MySQL Schema
+                </div>
+                <h2 class="text-3xl font-extrabold">AIRA Full-Stack System Blueprint</h2>
+                <p class="text-slate-300 text-sm max-w-2xl">
+                    Below is the database structure (MySQL) and backend server configurations for Python Flask & Node.js Express to pair with your frontend.
+                </p>
+            </div>
+
+            <!-- TABBED TECH STACK SPECIFICATIONS -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- MySQL Database Schema -->
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-database text-amber-500"></i> MySQL Relational Database Schema
+                    </h3>
+                    <pre class="bg-slate-950 text-emerald-400 p-4 rounded-2xl text-xs overflow-x-auto font-mono"><code>-- AIRA Database Schema
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    phone VARCHAR(15) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE restaurants (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    cuisine VARCHAR(100),
+    rating DECIMAL(2,1) DEFAULT 4.0,
+    delivery_time VARCHAR(20),
+    is_veg BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE menu_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    restaurant_id INT,
+    item_name VARCHAR(150) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    is_veg BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
+);
+
+CREATE TABLE orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    total_amount DECIMAL(10,2) NOT NULL,
+    status ENUM('pending', 'confirmed', 'out_for_delivery', 'delivered') DEFAULT 'pending',
+    delivery_address TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);</code></pre>
+                </div>
+
+                <!-- Python / Flask Backend API -->
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-brands fa-python text-blue-500"></i> Python Flask API Server (app.py)
+                    </h3>
+                    <pre class="bg-slate-950 text-sky-300 p-4 rounded-2xl text-xs overflow-x-auto font-mono"><code># AIRA Flask API Service
+from flask import Flask, jsonify, request
+from flask_mysqldb import MySQL
+
+app = Flask(__name__)
+
+# DB Config
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'password'
+app.config['MYSQL_DB'] = 'aira_food_db'
+
+mysql = MySQL(app)
+
+@app.route('/api/restaurants', methods=['GET'])
+def get_restaurants():
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT id, name, cuisine, rating FROM restaurants")
+    rows = cur.fetchall()
+    cur.close()
+    return jsonify(rows)
+
+@app.route('/api/orders', methods=['POST'])
+def place_order():
+    data = request.json
+    cur = mysql.connection.cursor()
+    cur.execute("INSERT INTO orders (user_id, total_amount, delivery_address) VALUES (%s, %s, %s)",
+                (data['user_id'], data['total_amount'], data['address']))
+    mysql.connection.commit()
+    cur.close()
+    return jsonify({"message": "Order created successfully!", "status": 201})
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)</code></pre>
+                </div>
+
+                <!-- Node.js + Express Backend -->
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3 lg:col-span-2">
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-brands fa-node-js text-emerald-600"></i> Node.js + Express Backend (server.js)
+                    </h3>
+                    <pre class="bg-slate-950 text-indigo-300 p-4 rounded-2xl text-xs overflow-x-auto font-mono"><code>// AIRA Express API Server
+const express = require('express');
+const mysql = require('mysql2');
+const cors = require('cors');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'password',
+  database: 'aira_food_db'
+});
+
+db.connect(err => {
+  if (err) console.error('Database connection failed:', err);
+  else console.log('Connected to AIRA MySQL Database');
+});
+
+// Fetch menu items for restaurant
+app.get('/api/menu/:restaurantId', (req, res) => {
+  const query = 'SELECT * FROM menu_items WHERE restaurant_id = ?';
+  db.query(query, [req.params.restaurantId], (err, results) => {
+    if (err) return res.status(500).send(err);
+    res.json(results);
+  });
+});
+
+app.listen(3000, () => console.log('AIRA Node Server running on port 3000'));</code></pre>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- RESTAURANT / ITEM DETAIL MODAL -->
+    <div id="restaurant-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex justify-center items-end sm:items-center p-0 sm:p-4 transition-opacity">
+        <div class="bg-white w-full max-w-3xl rounded-t-3xl sm:rounded-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300">
+            <!-- Modal Header / Cover Image -->
+            <div class="relative h-48 sm:h-64 bg-slate-800 flex-shrink-0">
+                <img id="modal-rest-cover" class="w-full h-full object-cover" src="" alt="Restaurant Cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent"></div>
+                <button onclick="closeRestaurantModal()" class="absolute top-4 right-4 w-9 h-9 bg-white/80 hover:bg-white text-slate-800 rounded-full flex items-center justify-center font-bold shadow-md transition-transform active:scale-95">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+                <div class="absolute bottom-4 left-6 right-6 text-white">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span id="modal-rest-rating" class="bg-emerald-600 text-white text-xs font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                            <i class="fa-solid fa-star text-[10px]"></i> 4.5
+                        </span>
+                        <span id="modal-rest-time" class="text-xs bg-black/50 backdrop-blur-md px-2 py-0.5 rounded text-slate-200">25 mins</span>
+                        <span id="modal-rest-price" class="text-xs bg-black/50 backdrop-blur-md px-2 py-0.5 rounded text-slate-200">₹300 for two</span>
+                    </div>
+                    <h2 id="modal-rest-name" class="text-2xl sm:text-3xl font-extrabold tracking-tight">Restaurant Name</h2>
+                    <p id="modal-rest-cuisines" class="text-xs sm:text-sm text-slate-300">Cuisines details...</p>
+                </div>
+            </div>
+
+            <!-- Modal Menu Items Body -->
+            <div class="p-6 overflow-y-auto flex-1 space-y-6">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-utensils text-brand-600"></i> Menu Items
+                    </h3>
+                    <div id="modal-menu-items" class="space-y-4">
+                        <!-- Dynamic Menu Items populated via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR CART DRAWER -->
+    <div id="cart-drawer-overlay" onclick="toggleCartDrawer()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden transition-opacity"></div>
+    <aside id="cart-drawer" class="fixed top-0 right-0 h-full w-full sm:w-[420px] bg-white z-50 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+        <div class="p-4 sm:p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-bag-shopping text-brand-600 text-xl"></i>
+                <h2 class="text-lg font-extrabold text-slate-900">Your Cart</h2>
+                <span id="cart-drawer-count" class="text-xs font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">0 items</span>
+            </div>
+            <button onclick="toggleCartDrawer()" class="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-600 flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- CART ITEMS LIST -->
+        <div id="cart-items-container" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+            <!-- Cart items populated via JS -->
+        </div>
+
+        <!-- CART FOOTER & BILL BREAKDOWN -->
+        <div class="p-4 sm:p-5 border-t border-slate-200 bg-slate-50 space-y-3">
+            <div class="space-y-1.5 text-xs text-slate-600">
+                <div class="flex justify-between">
+                    <span>Item Total</span>
+                    <span id="cart-subtotal" class="font-semibold text-slate-800">₹0</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Delivery Fee & Packaging</span>
+                    <span id="cart-delivery-fee" class="font-semibold text-emerald-600">FREE</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Govt Taxes & Charges</span>
+                    <span id="cart-tax" class="font-semibold text-slate-800">₹0</span>
+                </div>
+                <div class="flex justify-between pt-2 border-t border-slate-200 text-sm font-bold text-slate-900">
+                    <span>To Pay</span>
+                    <span id="cart-total" class="text-brand-600">₹0</span>
+                </div>
+            </div>
+
+            <button id="checkout-btn" onclick="proceedToCheckout()" class="w-full bg-gradient-to-r from-brand-600 to-rose-600 hover:from-brand-700 hover:to-rose-700 text-white font-extrabold py-3.5 rounded-xl shadow-lg shadow-brand-600/30 flex items-center justify-between px-4 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                <span>Proceed to Checkout</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- REAL-TIME TRACKING / ORDER CONFIRMATION MODAL -->
+    <div id="tracking-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <!-- Header Status -->
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-600 p-6 text-white text-center relative">
+                <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-md">
+                    <i class="fa-solid fa-motorcycle text-3xl text-white"></i>
+                </div>
+                <h3 class="text-2xl font-black">Order Placed & Confirmed!</h3>
+                <p class="text-xs text-emerald-100 mt-1">Order #AIRA-<span id="tracking-order-id">84920</span> • Estimated Delivery in <span class="font-bold underline" id="tracking-eta">22 mins</span></p>
+            </div>
+
+            <!-- SIMULATED REAL-TIME MAP -->
+            <div class="relative h-48 bg-slate-200 overflow-hidden border-y border-slate-300">
+                <!-- Simple Vector Styled Map Background -->
+                <div class="absolute inset-0 bg-[#e5e3df] opacity-90">
+                    <!-- Map Graphic Grid/Road Lines -->
+                    <svg class="w-full h-full opacity-40" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+                        <line x1="0" y1="50" x2="100%" y2="50" stroke="#999" stroke-width="8"/>
+                        <line x1="0" y1="120" x2="100%" y2="120" stroke="#fff" stroke-width="12"/>
+                        <line x1="150" y1="0" x2="150" y2="100%" stroke="#fff" stroke-width="10"/>
+                        <line x1="300" y1="0" x2="300" y2="100%" stroke="#999" stroke-width="6"/>
+                    </svg>
+                </div>
+
+                <!-- Restaurant Pin -->
+                <div class="absolute top-10 left-12 flex flex-col items-center">
+                    <div class="bg-slate-900 text-white p-1.5 rounded-full shadow-lg text-xs">
+                        <i class="fa-solid fa-store"></i>
+                    </div>
+                    <span class="text-[10px] font-bold bg-white/90 px-1.5 py-0.5 rounded shadow mt-0.5">Kitchen</span>
+                </div>
+
+                <!-- User Pin -->
+                <div class="absolute bottom-10 right-12 flex flex-col items-center">
+                    <div class="bg-brand-600 text-white p-1.5 rounded-full shadow-lg text-xs">
+                        <i class="fa-solid fa-house"></i>
+                    </div>
+                    <span class="text-[10px] font-bold bg-white/90 px-1.5 py-0.5 rounded shadow mt-0.5">You</span>
+                </div>
+
+                <!-- Delivery Bike Icon Animated along Path -->
+                <div id="delivery-bike" class="absolute top-12 left-16 transition-all duration-1000 ease-linear flex items-center gap-1 bg-amber-500 text-slate-950 px-2 py-1 rounded-full shadow-lg text-xs font-bold">
+                    <i class="fa-solid fa-motorcycle animate-bounce"></i>
+                    <span class="text-[10px]">Rider</span>
+                </div>
+            </div>
+
+            <!-- LIVE STATUS STEPPER -->
+            <div class="p-6 space-y-4 flex-1 overflow-y-auto">
+                <div class="space-y-3">
+                    <div class="flex items-start gap-3">
+                        <div id="step-1-icon" class="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold mt-0.5">✓</div>
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-900">Order Received by Restaurant</h4>
+                            <p class="text-[11px] text-slate-500">The kitchen has started preparing your food.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div id="step-2-icon" class="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-bold mt-0.5 animate-pulse">2</div>
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-900">Delivery Partner Assigned</h4>
+                            <p class="text-[11px] text-slate-500">Rahul Sharma is at the restaurant picking up your order.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div id="step-3-icon" class="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold mt-0.5">3</div>
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-400">Order Out for Delivery</h4>
+                            <p class="text-[11px] text-slate-400">On the way to your destination.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rider Call Card -->
+                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-700">
+                            <i class="fa-solid fa-user-ninja text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="text-xs font-bold text-slate-900">Rahul Sharma</h5>
+                            <span class="text-[10px] text-emerald-600 font-semibold">Vaccinated & Hygiene Verified</span>
+                        </div>
+                    </div>
+                    <button onclick="alert('Calling delivery partner Rahul (+91 98765 43210)...')" class="w-9 h-9 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-700 flex items-center justify-center transition-colors">
+                        <i class="fa-solid fa-phone"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Close Modal -->
+            <div class="p-4 border-t border-slate-200 text-center">
+                <button onclick="closeTrackingModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition-colors">
+                    Back to Home
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOCATION PICKER MODAL -->
+    <div id="location-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-extrabold text-slate-900">Select Delivery Location</h3>
+                <button onclick="closeLocationModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="space-y-2">
+                <button onclick="setLocation('Home', '12th Main Road, Anna Nagar, Chennai')" class="w-full p-3 rounded-2xl border border-slate-200 hover:border-brand-500 text-left flex items-center gap-3 hover:bg-brand-50/50 transition-colors">
+                    <i class="fa-solid fa-house text-brand-600"></i>
+                    <div>
+                        <div class="font-bold text-xs text-slate-900">Home</div>
+                        <div class="text-[11px] text-slate-500">12th Main Road, Anna Nagar, Chennai</div>
+                    </div>
+                </button>
+                <button onclick="setLocation('Work', 'Tech Park, OMR Road, Chennai')" class="w-full p-3 rounded-2xl border border-slate-200 hover:border-brand-500 text-left flex items-center gap-3 hover:bg-brand-50/50 transition-colors">
+                    <i class="fa-solid fa-briefcase text-brand-600"></i>
+                    <div>
+                        <div class="font-bold text-xs text-slate-900">Work</div>
+                        <div class="text-[11px] text-slate-500">Tech Park, OMR Road, Chennai</div>
+                    </div>
+                </button>
+                <button onclick="setLocation('Other', 'Tiruchirappalli, Tamil Nadu')" class="w-full p-3 rounded-2xl border border-slate-200 hover:border-brand-500 text-left flex items-center gap-3 hover:bg-brand-50/50 transition-colors">
+                    <i class="fa-solid fa-location-dot text-brand-600"></i>
+                    <div>
+                        <div class="font-bold text-xs text-slate-900">Current Location</div>
+                        <div class="text-[11px] text-slate-500">Tiruchirappalli, Tamil Nadu</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROMO OFFERS MODAL -->
+    <div id="offers-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-percent text-amber-500"></i> Available Coupons & Offers
+                </h3>
+                <button onclick="toggleOffersModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="space-y-3">
+                <div class="bg-amber-50 border border-amber-200 p-3.5 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <span class="bg-amber-500 text-slate-950 font-black text-[10px] px-2 py-0.5 rounded">AIRA50</span>
+                        <h4 class="text-xs font-bold text-slate-900 mt-1">Get 50% OFF up to ₹100</h4>
+                        <p class="text-[10px] text-slate-500">Valid on all food orders above ₹199</p>
+                    </div>
+                    <button onclick="applyCoupon('AIRA50')" class="text-xs font-bold text-brand-600 hover:underline">Apply</button>
+                </div>
+                <div class="bg-purple-50 border border-purple-200 p-3.5 rounded-2xl flex justify-between items-center">
+                    <div>
+                        <span class="bg-purple-600 text-white font-black text-[10px] px-2 py-0.5 rounded">ZEPTO10</span>
+                        <h4 class="text-xs font-bold text-slate-900 mt-1">Free Delivery on AIRA Mart</h4>
+                        <p class="text-[10px] text-slate-500">Instant 10-Min grocery order discount</p>
+                    </div>
+                    <button onclick="applyCoupon('ZEPTO10')" class="text-xs font-bold text-purple-600 hover:underline">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- USER PROFILE MODAL -->
+    <div id="profile-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl text-center">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-brand-600 to-amber-500 text-white flex items-center justify-center text-2xl font-black mx-auto shadow-lg">
+                A
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-slate-900">Alex Rider</h3>
+                <p class="text-xs text-slate-500">+91 98765 43210 • Pro Member</p>
+            </div>
+            <div class="pt-2 space-y-2 text-left text-xs font-bold text-slate-700">
+                <button class="w-full p-3 rounded-xl bg-slate-100 hover:bg-slate-200 flex justify-between items-center">
+                    <span><i class="fa-solid fa-clock-rotate-left mr-2 text-slate-500"></i> Past Orders</span>
+                    <i class="fa-solid fa-chevron-right text-slate-400"></i>
+                </button>
+                <button class="w-full p-3 rounded-xl bg-slate-100 hover:bg-slate-200 flex justify-between items-center">
+                    <span><i class="fa-solid fa-credit-card mr-2 text-slate-500"></i> Saved Payment Methods</span>
+                    <i class="fa-solid fa-chevron-right text-slate-400"></i>
+                </button>
+            </div>
+            <button onclick="closeProfileModal()" class="w-full bg-slate-900 text-white font-bold py-2.5 rounded-xl text-xs mt-2">Close</button>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl z-50 hidden flex items-center gap-2 transform translate-y-10 opacity-0 transition-all duration-300">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+        <span id="toast-msg">Item added to cart!</span>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-10 mt-12 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-brand-600 flex items-center justify-center text-white font-bold">A</div>
+                    <span class="text-lg font-black text-white">AIRA Food & Express</span>
+                </div>
+                <div class="flex gap-6 text-slate-400">
+                    <a href="#" class="hover:text-white">About Us</a>
+                    <a href="#" class="hover:text-white">AIRA Mart</a>
+                    <a href="#" class="hover:text-white">Privacy Policy</a>
+                    <a href="#" class="hover:text-white">Partner with Us</a>
+                </div>
+            </div>
+            <p class="text-center text-slate-500 text-[11px]">© 2026 AIRA Food Project. All rights reserved. Crafted for high-fidelity food & express grocery delivery experiences.</p>
+        </div>
+    </footer>
+
+    <!-- APPLICATION DATA & LOGIC -->
+    <script>
+        // Main App State & Mock Database
+        const CATEGORIES = [
+            { id: 'biryani', name: 'Biryani', image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=150&auto=format&fit=crop&q=80' },
+            { id: 'pizza', name: 'Pizza', image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=150&auto=format&fit=crop&q=80' },
+            { id: 'burger', name: 'Burgers', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=150&auto=format&fit=crop&q=80' },
+            { id: 'chinese', name: 'Chinese', image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=150&auto=format&fit=crop&q=80' },
+            { id: 'dessert', name: 'Desserts', image: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=150&auto=format&fit=crop&q=80' },
+            { id: 'dosa', name: 'South Indian', image: 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=150&auto=format&fit=crop&q=80' }
+        ];
+
+        const RESTAURANTS = [
+            {
+                id: 'rest-1',
+                name: 'Paradise Biryani House',
+                rating: 4.6,
+                time: '20-25 mins',
+                priceForTwo: 350,
+                cuisine: 'Hyderabadi Biryani, Mughlai',
+                isVeg: false,
+                image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&auto=format&fit=crop&q=80',
+                offer: '50% OFF up to ₹100',
+                menu: [
+                    { id: 'm1', name: 'Special Chicken Dum Biryani', price: 299, isVeg: false, rating: 4.8, description: 'Fragrant basmati rice cooked with succulent chicken pieces and secret spices.' },
+                    { id: 'm2', name: 'Paneer Butter Masala Biryani', price: 249, isVeg: true, rating: 4.5, description: 'Creamy paneer cubes embedded in aromatic spiced biryani.' },
+                    { id: 'm3', name: 'Chicken 65 (Starters)', price: 199, isVeg: false, rating: 4.6, description: 'Crispy fried spicy chicken bites with curry leaves.' }
+                ]
+            },
+            {
+                id: 'rest-2',
+                name: 'The Pizza Oven & Co.',
+                rating: 4.4,
+                time: '30-35 mins',
+                priceForTwo: 500,
+                cuisine: 'Pizzas, Italian, Pastas',
+                isVeg: true,
+                image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&auto=format&fit=crop&q=80',
+                offer: 'FLAT ₹125 OFF',
+                menu: [
+                    { id: 'm4', name: 'Cheesy Margherita Pizza', price: 279, isVeg: true, rating: 4.7, description: 'Loaded with 100% real mozzarella cheese & fresh basil.' },
+                    { id: 'm5', name: 'Farmhouse Special Pizza', price: 349, isVeg: true, rating: 4.6, description: 'Capsicum, onion, grilled mushroom, and fresh tomato.' }
+                ]
+            },
+            {
+                id: 'rest-3',
+                name: 'Burger & Shack',
+                rating: 4.3,
+                time: '15-20 mins',
+                priceForTwo: 300,
+                cuisine: 'American Burgers, Fries',
+                isVeg: false,
+                image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80',
+                offer: 'Free French Fries',
+                menu: [
+                    { id: 'm6', name: 'Crispy Chicken Zinger Burger', price: 189, isVeg: false, rating: 4.5, description: 'Double crispy chicken patty with spicy mayo in sesame bun.' },
+                    { id: 'm7', name: 'Peri Peri Loaded Fries', price: 129, isVeg: true, rating: 4.4, description: 'Golden fries dusted with peri peri spice mix.' }
+                ]
+            },
+            {
+                id: 'rest-4',
+                name: 'Sree Saravana Bhavan',
+                rating: 4.7,
+                time: '15-25 mins',
+                priceForTwo: 200,
+                cuisine: 'South Indian, Tiffin, Meals',
+                isVeg: true,
+                image: 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=600&auto=format&fit=crop&q=80',
+                offer: '20% OFF',
+                menu: [
+                    { id: 'm8', name: 'Ghee Roast Paper Masala Dosa', price: 110, isVeg: true, rating: 4.9, description: 'Crispy golden dosa roasted with pure cow ghee.' },
+                    { id: 'm9', name: 'Mini Idli Sambar (12 Pcs)', price: 85, isVeg: true, rating: 4.8, description: 'Bite-sized soft idlis dipped in aromatic piping hot sambar.' }
+                ]
+            }
+        ];
+
+        const MART_ITEMS = [
+            { id: 'z1', name: 'Amul Taaza Toned Milk (1L)', price: 54, category: 'Dairy', weight: '1 Litre', image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=200&auto=format&fit=crop&q=80' },
+            { id: 'z2', name: 'Fresh Hass Avocado', price: 99, category: 'Fruits', weight: '2 Pcs (approx 300g)', image: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=200&auto=format&fit=crop&q=80' },
+            { id: 'z3', name: 'Lay\'s India\'s Magic Masala', price: 20, category: 'Snacks', weight: '50g', image: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=200&auto=format&fit=crop&q=80' },
+            { id: 'z4', name: 'Coca-Cola Soft Drink Can', price: 40, category: 'Drinks', weight: '300ml', image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=200&auto=format&fit=crop&q=80' },
+            { id: 'z5', name: 'Ferrero Rocher Chocolate', price: 349, category: 'Sweets', weight: '16 Pcs Pack', image: 'https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=200&auto=format&fit=crop&q=80' }
+        ];
+
+        const DINING_RESTS = [
+            { id: 'd1', name: 'The Taj Fine Dining & Grill', discount: '30% OFF ON TOTAL BILL', rating: 4.9, location: 'Cantonment, Tiruchirappalli', image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&auto=format&fit=crop&q=80' },
+            { id: 'd2', name: 'Sky Lounge Rooftop Bar', discount: 'BUY 1 GET 1 DRINKS', rating: 4.7, location: 'Thillai Nagar, Tiruchirappalli', image: 'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=600&auto=format&fit=crop&q=80' }
+        ];
+
+        // Active Application State
+        let currentTab = 'food';
+        let cart = [];
+        let currentFilter = 'all';
+        let activeAppliedCoupon = null;
+
+        // Initialize on page load
+        window.onload = function() {
+            renderCategories();
+            renderRestaurants(RESTAURANTS);
+            renderMartItems();
+            renderDining();
+        };
+
+        // Navigation tab handler
+        function switchTab(tab) {
+            currentTab = tab;
+            ['food', 'zepto', 'dining', 'stack'].forEach(t => {
+                const view = document.getElementById(`view-${t}`);
+                const tabBtn = document.getElementById(`tab-${t}`);
+                const mobTabBtn = document.getElementById(`mob-tab-${t}`);
+                
+                if (t === tab) {
+                    if (view) view.classList.remove('hidden');
+                    if (tabBtn) {
+                        tabBtn.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+                        tabBtn.classList.remove('text-slate-600');
+                    }
+                    if (mobTabBtn) mobTabBtn.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+                } else {
+                    if (view) view.classList.add('hidden');
+                    if (tabBtn) {
+                        tabBtn.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
+                        tabBtn.classList.add('text-slate-600');
+                    }
+                    if (mobTabBtn) mobTabBtn.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
+                }
+            });
+        }
+
+        // Render top categories
+        function renderCategories() {
+            const container = document.getElementById('category-scroller');
+            container.innerHTML = CATEGORIES.map(c => `
+                <div onclick="filterCuisine('${c.name}')" class="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group">
+                    <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-transparent group-hover:border-brand-500 transition-all shadow-md">
+                        <img src="${c.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" alt="${c.name}">
+                    </div>
+                    <span class="text-xs font-bold text-slate-700 group-hover:text-brand-600">${c.name}</span>
+                </div>
+            `).join('');
+        }
+
+        // Render food restaurants grid
+        function renderRestaurants(list) {
+            const container = document.getElementById('restaurants-grid');
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12 text-slate-400">
+                        <i class="fa-solid fa-utensils text-4xl mb-2"></i>
+                        <p class="font-bold">No restaurants found matching your criteria.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = list.map(r => `
+                <div onclick="openRestaurantModal('${r.id}')" class="bg-white rounded-2xl overflow-hidden border border-slate-200/80 hover:shadow-xl transition-all duration-300 group cursor-pointer flex flex-col">
+                    <div class="relative h-44 overflow-hidden bg-slate-100">
+                        <img src="${r.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="${r.name}">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 right-3 flex justify-between items-end text-white">
+                            <span class="font-black text-sm bg-brand-600/90 backdrop-blur-md px-2.5 py-1 rounded-lg shadow">${r.offer}</span>
+                            <span class="text-xs font-bold bg-black/60 backdrop-blur-md px-2 py-0.5 rounded">${r.time}</span>
+                        </div>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start gap-2">
+                                <h3 class="font-extrabold text-slate-900 group-hover:text-brand-600 transition-colors line-clamp-1">${r.name}</h3>
+                                <span class="bg-emerald-600 text-white text-[11px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 flex-shrink-0">
+                                    ${r.rating} <i class="fa-solid fa-star text-[9px]"></i>
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1 line-clamp-1">${r.cuisine}</p>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center text-xs font-semibold text-slate-400">
+                            <span>₹${r.priceForTwo} for two</span>
+                            <span class="text-brand-600 font-bold group-hover:translate-x-1 transition-transform">View Menu →</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render 10-min grocery items
+        function renderMartItems() {
+            const container = document.getElementById('mart-items-grid');
+            container.innerHTML = MART_ITEMS.map(item => `
+                <div class="bg-white rounded-2xl p-3 border border-slate-200 hover:shadow-lg transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="relative h-28 bg-slate-50 rounded-xl overflow-hidden mb-2">
+                            <img src="${item.image}" class="w-full h-full object-cover" alt="${item.name}">
+                            <span class="absolute top-1 left-1 bg-purple-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded">10 MIN</span>
+                        </div>
+                        <span class="text-[10px] text-slate-400 font-bold uppercase">${item.category}</span>
+                        <h4 class="font-bold text-xs text-slate-900 line-clamp-2 leading-tight">${item.name}</h4>
+                        <span class="text-[11px] text-slate-500 block mt-0.5">${item.weight}</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-3">
+                        <span class="font-black text-sm text-slate-900">₹${item.price}</span>
+                        <button onclick="addToCart({id:'${item.id}', name:'${item.name.replace(/'/g, "\\'")}', price:${item.price}})" class="bg-purple-100 hover:bg-purple-600 hover:text-white text-purple-700 font-bold text-xs px-3 py-1.5 rounded-xl transition-colors">
+                            ADD
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render dining out list
+        function renderDining() {
+            const container = document.getElementById('dining-grid');
+            container.innerHTML = DINING_RESTS.map(d => `
+                <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                    <div class="h-44 bg-slate-200 relative">
+                        <img src="${d.image}" class="w-full h-full object-cover">
+                        <span class="absolute bottom-3 left-3 bg-amber-500 text-slate-950 font-black text-xs px-2.5 py-1 rounded-lg">${d.discount}</span>
+                    </div>
+                    <div class="p-4 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-slate-900">${d.name}</h4>
+                            <span class="bg-emerald-600 text-white text-xs font-bold px-1.5 py-0.5 rounded">${d.rating} ★</span>
+                        </div>
+                        <p class="text-xs text-slate-500">${d.location}</p>
+                        <button onclick="alert('Table Reservation Confirmed for 2 Guests!')" class="w-full bg-slate-900 text-white text-xs font-bold py-2 rounded-xl mt-2 hover:bg-brand-600 transition-colors">Book Table Now</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Open menu modal for selected restaurant
+        function openRestaurantModal(restId) {
+            const rest = RESTAURANTS.find(r => r.id === restId);
+            if (!rest) return;
+
+            document.getElementById('modal-rest-cover').src = rest.image;
+            document.getElementById('modal-rest-name').innerText = rest.name;
+            document.getElementById('modal-rest-cuisines').innerText = rest.cuisine;
+            document.getElementById('modal-rest-rating').innerHTML = `<i class="fa-solid fa-star text-[10px]"></i> ${rest.rating}`;
+            document.getElementById('modal-rest-time').innerText = rest.time;
+            document.getElementById('modal-rest-price').innerText = `₹${rest.priceForTwo} for two`;
+
+            const menuContainer = document.getElementById('modal-menu-items');
+            menuContainer.innerHTML = rest.menu.map(item => `
+                <div class="flex justify-between items-center p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div class="space-y-1 max-w-[70%]">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-full border ${item.isVeg ? 'border-emerald-600 p-0.5' : 'border-rose-600 p-0.5'} flex items-center justify-center">
+                                <span class="w-1.5 h-1.5 rounded-full ${item.isVeg ? 'bg-emerald-600' : 'bg-rose-600'}"></span>
+                            </span>
+                            <h4 class="font-bold text-sm text-slate-900">${item.name}</h4>
+                        </div>
+                        <span class="font-black text-xs text-slate-800">₹${item.price}</span>
+                        <p class="text-[11px] text-slate-500 line-clamp-2">${item.description}</p>
+                    </div>
+                    <button onclick="addToCart({id:'${item.id}', name:'${item.name.replace(/'/g, "\\'")}', price:${item.price}})" class="bg-white hover:bg-brand-600 hover:text-white border border-brand-500 text-brand-600 font-extrabold text-xs px-4 py-2 rounded-xl shadow-sm transition-all active:scale-95">
+                        ADD +
+                    </button>
+                </div>
+            `).join('');
+
+            document.getElementById('restaurant-modal').classList.remove('hidden');
+        }
+
+        function closeRestaurantModal() {
+            document.getElementById('restaurant-modal').classList.add('hidden');
+        }
+
+        // Cart State & Calculations
+        function addToCart(item) {
+            const existingIndex = cart.findIndex(c => c.item.id === item.id);
+            if (existingIndex > -1) {
+                cart[existingIndex].qty += 1;
+            } else {
+                cart.push({ item: item, qty: 1 });
+            }
+            updateCartUI();
+            showToast(`Added ${item.name} to cart!`);
+        }
+
+        function updateQty(itemId, change) {
+            const index = cart.findIndex(c => c.item.id === itemId);
+            if (index > -1) {
+                cart[index].qty += change;
+                if (cart[index].qty <= 0) {
+                    cart.splice(index, 1);
+                }
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const totalItems = cart.reduce((sum, i) => sum + i.qty, 0);
+            const subtotal = cart.reduce((sum, i) => sum + (i.item.price * i.qty), 0);
+
+            document.getElementById('cart-count-badge').innerText = totalItems;
+            document.getElementById('cart-drawer-count').innerText = `${totalItems} items`;
+
+            const container = document.getElementById('cart-items-container');
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-16 space-y-3">
+                        <i class="fa-solid fa-basket-shopping text-4xl text-slate-300"></i>
+                        <p class="text-xs font-bold text-slate-400">Your cart is empty!</p>
+                    </div>`;
+                document.getElementById('checkout-btn').disabled = true;
+            } else {
+                document.getElementById('checkout-btn').disabled = false;
+                container.innerHTML = cart.map(c => `
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+                        <div class="space-y-0.5">
+                            <h4 class="font-bold text-xs text-slate-900">${c.item.name}</h4>
+                            <span class="text-xs text-slate-500 font-semibold">₹${c.item.price} x ${c.qty}</span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-2 py-1 shadow-sm">
+                            <button onclick="updateQty('${c.item.id}', -1)" class="text-slate-500 hover:text-brand-600 px-1 font-bold text-xs">-</button>
+                            <span class="text-xs font-bold text-slate-900 px-1">${c.qty}</span>
+                            <button onclick="updateQty('${c.item.id}', 1)" class="text-slate-500 hover:text-brand-600 px-1 font-bold text-xs">+</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            const tax = Math.round(subtotal * 0.05);
+            let discount = 0;
+            if(activeAppliedCoupon === 'AIRA50') discount = Math.min(100, subtotal * 0.5);
+
+            const grandTotal = Math.max(0, subtotal + tax - discount);
+
+            document.getElementById('cart-subtotal').innerText = `₹${subtotal}`;
+            document.getElementById('cart-tax').innerText = `₹${tax}`;
+            document.getElementById('cart-total').innerText = `₹${grandTotal}`;
+        }
+
+        function toggleCartDrawer() {
+            const drawer = document.getElementById('cart-drawer');
+            const overlay = document.getElementById('cart-drawer-overlay');
+            if (drawer.classList.contains('translate-x-full')) {
+                drawer.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                drawer.classList.add('translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        // Simulated Order Checkout and Live Tracking
+        function proceedToCheckout() {
+            toggleCartDrawer();
+            
+            if(window.confetti) {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+
+            document.getElementById('tracking-order-id').innerText = Math.floor(10000 + Math.random() * 90000);
+            document.getElementById('tracking-modal').classList.remove('hidden');
+
+            const bike = document.getElementById('delivery-bike');
+            bike.style.left = '20%';
+            bike.style.top = '30%';
+
+            setTimeout(() => {
+                bike.style.left = '50%';
+                bike.style.top = '50%';
+            }, 3000);
+
+            setTimeout(() => {
+                bike.style.left = '75%';
+                bike.style.top = '70%';
+            }, 6000);
+
+            cart = [];
+            updateCartUI();
+        }
+
+        function closeTrackingModal() {
+            document.getElementById('tracking-modal').classList.add('hidden');
+        }
+
+        // Realtime Search & Filtering
+        function handleSearch(query) {
+            const clearBtn = document.getElementById('search-clear-btn');
+            if (query.trim().length > 0) clearBtn.classList.remove('hidden');
+            else clearBtn.classList.add('hidden');
+
+            const filtered = RESTAURANTS.filter(r => 
+                r.name.toLowerCase().includes(query.toLowerCase()) || 
+                r.cuisine.toLowerCase().includes(query.toLowerCase())
+            );
+            renderRestaurants(filtered);
+        }
+
+        function clearSearch() {
+            document.getElementById('main-search-input').value = '';
+            document.getElementById('search-clear-btn').classList.add('hidden');
+            renderRestaurants(RESTAURANTS);
+        }
+
+        function applyFilter(filter) {
+            let filtered = RESTAURANTS;
+            if (filter === 'rating') filtered = RESTAURANTS.filter(r => r.rating >= 4.5);
+            if (filter === 'pure_veg') filtered = RESTAURANTS.filter(r => r.isVeg);
+            if (filter === 'fast') filtered = RESTAURANTS.filter(r => parseInt(r.time) <= 20);
+
+            renderRestaurants(filtered);
+        }
+
+        function filterCuisine(cuisineName) {
+            const filtered = RESTAURANTS.filter(r => r.cuisine.toLowerCase().includes(cuisineName.toLowerCase()));
+            document.getElementById('restaurant-grid-title').innerText = `${cuisineName} Spots`;
+            renderRestaurants(filtered);
+        }
+
+        // Coupon Handling
+        function toggleOffersModal() {
+            document.getElementById('offers-modal').classList.toggle('hidden');
+        }
+
+        function applyCoupon(code) {
+            activeAppliedCoupon = code;
+            toggleOffersModal();
+            updateCartUI();
+            showToast(`Coupon ${code} applied successfully!`);
+        }
+
+        // Location Modal Controls
+        function openLocationModal() { document.getElementById('location-modal').classList.remove('hidden'); }
+        function closeLocationModal() { document.getElementById('location-modal').classList.add('hidden'); }
+        function setLocation(label, full) {
+            document.getElementById('current-location-label').innerText = `${label} • ${full.split(',')[0]}`;
+            document.getElementById('current-location-sub').innerText = full;
+            closeLocationModal();
+            showToast('Delivery location updated');
+        }
+
+        // Profile Controls
+        function openProfileModal() { document.getElementById('profile-modal').classList.remove('hidden'); }
+        function closeProfileModal() { document.getElementById('profile-modal').classList.add('hidden'); }
+
+        // Helper Toast Notification
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
